@@ -1,0 +1,12 @@
+venv
+*venv
+/venv
+
+.idea
+.workspace
+__pycache__
+/__pycache__
+
+/data
+data
+
