@@ -76,7 +76,7 @@ function calculate_all_integrals(ks::Array, integrals)
 end
 
 filepath = "integrals_feature.csv"
-ks = collect(0:1e-4:1e4)
+ks = collect(0:1e-4:10)
 
 integrals = [
     integral_1, integral_2, integral_3, integral_4, integral_5

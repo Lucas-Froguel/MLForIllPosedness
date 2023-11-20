@@ -1,12 +1,13 @@
 import torch
-from torch.utils.data import DataLoader
 from torchquad import set_up_backend 
 
-from src.dataset import CustomImageDataset
+from src.dataset import CustomImageDataset, load_dataset
 from src.models.model import FunctionNet
 from src.models.controller import NeuralNetController
 from src.models.train_net import train_one_step
-from src.settings import MONGO_DATABASE_URL, MONGODB_NAME, MONGO_DATA_COLLECTION
+from src.settings import MONGO_DATABASE_URL, MONGODB_NAME, MONGO_DATA_COLLECTION, kernels
+
+num_kernels = len(kernels.keys())
 
 print("Setting up device...")
 device = (
@@ -21,32 +22,47 @@ generator = torch.Generator(device=device)
 
 
 print("Loading dataset...")
-kernel1_data = CustomImageDataset(
-    kernel="x1", database=MONGODB_NAME, collection=MONGO_DATA_COLLECTION, db_url=MONGO_DATABASE_URL
-)
+kernel_loaders = [
+    load_dataset(
+        database=MONGODB_NAME, 
+        collection=MONGO_DATA_COLLECTION, 
+        db_url=MONGO_DATABASE_URL,
+        kernel=f"x{i+1}",
+        generator=generator
+    )
+    for i in range(num_kernels)
+]
+loaders = {
+    f"kernel_{i+1}": kernel_loader for i, kernel_loader in enumerate(kernel_loaders)
+}
 
-kernel1_loader = DataLoader(kernel1_data, batch_size=16, shuffle=True, generator=generator)
-train_features, train_labels = next(iter(kernel1_loader))
 
-
-model = FunctionNet(hidden_size=2).to(device)
+model = FunctionNet(hidden_size=20).to(device)
 model_controller = NeuralNetController(
     model=model, model_path="src/models/models/simple1"
 )
 
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+# I think we need a bigger lr
+# It seems a better way to estimate errors is needed as well (not only RMSE) - but what?
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-EPOCHS = 5
+EPOCHS = 2 * num_kernels
 
 best_vloss = 1_000_000.
 
 for epoch in range(EPOCHS):
     print('EPOCH {}:'.format(epoch + 1))
+    kernel_idx = epoch % num_kernels + 1
+    kernel_name = f"kernel_{kernel_idx}"
 
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
     avg_loss = train_one_step(
-        epoch, optimizer=optimizer, data_loader=kernel1_loader, model=model
+        epoch, 
+        optimizer=optimizer, 
+        data_loader=loaders[kernel_name], 
+        model=model, 
+        kernel=kernels[kernel_name]
     )
 
     model.eval()

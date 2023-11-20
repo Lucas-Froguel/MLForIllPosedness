@@ -1,7 +1,7 @@
 
 import pymongo
 import pandas as pd
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 from src.mongodb.queries.general_queries import get_one_document_query
 
@@ -19,8 +19,9 @@ class CustomImageDataset(Dataset):
 
     def __len__(self):
         # this is the amount of data points, the current length method would take too long
+        # There are 10**8 points
         # self.collection.count_documents({"kernel": self.kernel})
-        return 10**8
+        return 99000
 
     def __getitem__(self, idx):
         query = {
@@ -34,3 +35,18 @@ class CustomImageDataset(Dataset):
     
     def close_connection(self):
         self.client.close()
+
+
+def load_dataset(
+    database: str = None,
+    collection: str = None,
+    db_url: str = None,
+    kernel: str = None,
+    generator = None
+) -> DataLoader:
+    kernel_data = CustomImageDataset(
+        kernel=kernel, database=database, collection=collection, db_url=db_url
+    )
+    kernel_loader = DataLoader(kernel_data, batch_size=32, shuffle=True, generator=generator)
+
+    return kernel_loader

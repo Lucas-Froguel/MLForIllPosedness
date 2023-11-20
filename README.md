@@ -6,11 +6,11 @@ and given that we know K(k, x) and g(k), we want to find f(x). Our idea is that 
 
 # Data Generation
 
-We chose a test function f(x) and five kernels K_i(k, x) and calculated g(k) for 10^8 (from 0 to 10k with steps of 0.0001) points for each one of them. This code in julia automatically saves them in .csv files. Then, we saved this data in mongodb, big it was so big to instatiate both this data and the neural net in memory (this code is `load_database.pi`). We also created an index to speed things up, with 
+We chose a test function f(x) and five kernels K_i(k, x) and calculated g(k) for 10^5 (from 0 to 10 with steps of 0.0001) points for each one of them. This code in julia automatically saves them in .csv files. Then, we saved this data in mongodb, big it was so big to instatiate both this data and the neural net in memory (this code is `load_database.pi`). We also created an index to speed things up, with 
 ```
 db.getCollection('data').createIndex({"kernel": 1, "idx": 1})
 ```
 
 This first test uses noiseless data. 
 
-I still have not solved the problem of training with data from all kernels as the same time. 
+In order to train the neural net with data from all the kernels at once, the best idea is to use each kernel for a given epoch. Then we can train for each kernel twice or three times. 
