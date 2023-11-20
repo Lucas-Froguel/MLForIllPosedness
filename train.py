@@ -28,7 +28,8 @@ kernel_loaders = [
         collection=MONGO_DATA_COLLECTION, 
         db_url=MONGO_DATABASE_URL,
         kernel=f"x{i+1}",
-        generator=generator
+        generator=generator,
+        batch_size=64
     )
     for i in range(num_kernels)
 ]
@@ -37,14 +38,14 @@ loaders = {
 }
 
 
-model = FunctionNet(hidden_size=20).to(device)
+model = FunctionNet(hidden_size=60).to(device)
 model_controller = NeuralNetController(
-    model=model, model_path="src/models/models/simple1"
+    model=model, model_path="src/models/models/simple_model.pt"
 )
 
 # I think we need a bigger lr
 # It seems a better way to estimate errors is needed as well (not only RMSE) - but what?
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 EPOCHS = 2 * num_kernels
 
@@ -65,7 +66,7 @@ for epoch in range(EPOCHS):
         kernel=kernels[kernel_name]
     )
 
-    model.eval()
+    model_controller.save(f"src/models/models/simple_model_epoch_{epoch}.pt")
 
     print(f'LOSS train {avg_loss}')
 

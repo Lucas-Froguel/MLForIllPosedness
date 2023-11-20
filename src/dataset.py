@@ -42,11 +42,12 @@ def load_dataset(
     collection: str = None,
     db_url: str = None,
     kernel: str = None,
+    batch_size: int = None,
     generator = None
 ) -> DataLoader:
     kernel_data = CustomImageDataset(
         kernel=kernel, database=database, collection=collection, db_url=db_url
     )
-    kernel_loader = DataLoader(kernel_data, batch_size=32, shuffle=True, generator=generator)
+    kernel_loader = DataLoader(kernel_data, batch_size=batch_size, shuffle=True, generator=generator)
 
     return kernel_loader
