@@ -1,6 +1,6 @@
 
 import torch
-
+from src.models.model import FunctionNet
 
 
 input_size = 1

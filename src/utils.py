@@ -34,3 +34,28 @@ def plot_kernel_and_model(i, model=None, kernel=None, epoch: int = 0):
     plt.plot(x, yy.cpu().detach().numpy(), "b-", label="model")
     plt.legend()
     plt.savefig(f"src/pictures/rho_model_kernel_{epoch}_{i}.png")
+
+
+def plot_model(i, model=None, kernel=None, epoch: int = 0):
+    k = torch.tensor(2)
+
+    x = np.linspace(0, 10, num=1000)
+    xx = torch.linspace(0, 10, steps=1000).reshape(-1, 1)
+
+    yy = squeeze(model(xx)) * squeeze(kernel(xx, k))
+
+    plt.figure()
+    plt.plot(x, yy.cpu().detach().numpy(), "b-", label="model")
+    plt.legend()
+    plt.title(f"Model {i}")
+    plt.savefig(f"src/pictures/model_{epoch}_{i}.png")
+
+
+def plot_loss(i, loss, epoch: int = 0):
+    i += 1
+    x = np.linspace(start=0, stop=i, num=i)
+
+    plt.figure()
+    plt.plot(x, loss, "b-")
+    plt.title(f"Loss {i}")
+    plt.savefig(f"src/pictures/rho_loss_{epoch}_{i}.png")
